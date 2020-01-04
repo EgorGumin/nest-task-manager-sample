@@ -16,4 +16,12 @@ export class AuthController {
   ): Promise<void> {
     return this.authService.register(credentialsDto);
   }
+
+  @Post('/login')
+  async login(
+    @Body(ValidationPipe)
+      credentialsDto: CredentialsDto,
+  ): Promise<string> {
+    return await this.authService.validatePassword(credentialsDto);
+  }
 }

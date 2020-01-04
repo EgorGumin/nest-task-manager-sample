@@ -1,7 +1,8 @@
 import { EntityRepository, Repository } from 'typeorm';
 import { User } from './user.entity';
 import { CredentialsDto } from './dto/credentials.dto';
-import { ConflictException, InternalServerErrorException } from '@nestjs/common';
+import { ConflictException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -10,7 +11,11 @@ export class UserRepository extends Repository<User> {
     const { username, password } = credentialsDto;
     const user = new User();
     user.username = username;
-    user.password = password;
+
+    const salt: string = await bcrypt.genSalt();
+
+    const hashedPassword: string = await UserRepository.hashPassword(password, salt);
+    user.password = hashedPassword;
 
     try {
       await user.save();
@@ -21,6 +26,19 @@ export class UserRepository extends Repository<User> {
       } else {
         throw new InternalServerErrorException(`Can't create a user. Try again later.`);
       }
+    }
+  }
+
+  private static async hashPassword(password: string, salt: string): Promise<string> {
+    return bcrypt.hash(password, salt);
+  }
+
+  async getUserByUsername(username: string): Promise<User> {
+    const user = await this.findOne({username});
+    if (user) {
+      return user;
+    } else {
+      throw new NotFoundException(`Can't find user with username "${username}"`);
     }
   }
 }
