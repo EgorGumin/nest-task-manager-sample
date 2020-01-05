@@ -12,7 +12,7 @@ export class AuthController {
   @Post('/register')
   async register(
     @Body(ValidationPipe)
-    credentialsDto: CredentialsDto,
+      credentialsDto: CredentialsDto,
   ): Promise<void> {
     return this.authService.register(credentialsDto);
   }
@@ -21,7 +21,7 @@ export class AuthController {
   async login(
     @Body(ValidationPipe)
       credentialsDto: CredentialsDto,
-  ): Promise<string> {
+  ): Promise<{ accessToken: string }> {
     return await this.authService.validatePassword(credentialsDto);
   }
 }
